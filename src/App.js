@@ -5,18 +5,25 @@ import useSearch from "./useSearch";
 function App() {
   const [keyword, setKeyword] = useState("");
   const [pageNumber, setPageNumber] = useState(0);
-  const { results, loading, hasMore } = useSearch(keyword, pageNumber, 10);
+  const { results, loading, hasMore } = useSearch(keyword, pageNumber, 1000);
 
+  // Refer to the last node of the result
   const obserever = useRef();
+  // For the last elemnt, add an IntersectionObserver to it
   const lastElementRef = useCallback(
     (node) => {
+      // Not adding IntersectionObserver if the list is on loading
       if (loading) return;
+      // Disconnect with last obserever node
       if (obserever.current) obserever.current.disconnect();
       obserever.current = new IntersectionObserver((entries) => {
+        // If reaches to the end, it will fire the set next page action
         if (entries[0].isIntersecting && hasMore) {
           handlePageNumberChange();
         }
       });
+
+      // Connect new observer node
       if (node) obserever.current.observe(node);
     },
     [loading, hasMore]
@@ -27,7 +34,7 @@ function App() {
     setPageNumber(0);
   };
 
-  const debouncedHandleKeywordChange = _.debounce(handleKeywordChange, 300);
+  const debouncedHandleKeywordChange = _.debounce(handleKeywordChange, 500);
 
   const handlePageNumberChange = (e) => {
     setPageNumber((pageNumber) => pageNumber + 1);
